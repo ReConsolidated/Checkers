@@ -38,7 +38,29 @@ def get_moves(fields, y, x):
                     moves.append((x-2,y+2, x-1, y+1))
     return moves
 
-
+def all_atacks(fields):
+    moves = []
+    for tab in fields:
+        for one in tab:
+            x,y = one.position
+            if fields[x][y].isActive:
+                if fields[x][y].possesed == 2: #BLACK
+                            #ATTACKS
+                    if x+2<8 and y-2>=0:
+                        if fields[x+1][y-1].possesed == 1 and fields[x+2][y-2].possesed == 0:
+                            moves.append((x,y))
+                    if x+2<8 and y+2<8:
+                        if fields[x+1][y+1].possesed == 1 and fields[x+2][y+2].possesed == 0:
+                            moves.append((x,y))
+                if fields[x][y].possesed == 1: #WHITE
+                            #ATTACKS
+                    if x-2>=0 and y-2>=0:
+                        if fields[x-1][y-1].possesed == 2 and fields[x-2][y-2].possesed == 0:
+                            moves.append((x,y))
+                    if x-2>=0 and y+2<8:
+                        if fields[x-1][y+1].possesed == 2 and fields[x-2][y+2].possesed == 0:
+                            moves.append((x,y))
+    return moves
 
 class Field:
     def __init__(self):
