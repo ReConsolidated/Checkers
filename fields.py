@@ -95,6 +95,47 @@ def all_atacks(fields):
                             moves.append((x,y))
     return moves
 
+def check_for_attacks(fields, x, y):
+    moves = []
+    for tab in fields:
+        for one in tab:
+            if fields[x][y].isActive:
+                if fields[x][y].possesed == 2: #BLACK
+                            #ATTACKS
+                    if x+2<8 and y-2>=0:
+                        if fields[x+1][y-1].possesed == 1 and fields[x+2][y-2].possesed == 0:
+                            return 1
+                    if x+2<8 and y+2<8:
+                        if fields[x+1][y+1].possesed == 1 and fields[x+2][y+2].possesed == 0:
+                            return 1
+
+                            ##############
+                            #ATTACKS_BACK
+                    if x-2>=0 and y+2<8:
+                        if fields[x-1][y+1].possesed == 1 and fields[x-2][y+2].possesed == 0:
+                            return 1
+                    if x-2>=0 and y-2>=0:
+                        if fields[x-1][y-1].possesed == 1 and fields[x-2][y-2].possesed == 0:
+                            return 1
+                if fields[x][y].possesed == 1: #WHITE
+                            #ATTACKS
+                    if x-2>=0 and y-2>=0:
+                        if fields[x-1][y-1].possesed == 2 and fields[x-2][y-2].possesed == 0:
+                            return 1
+                    if x-2>=0 and y+2<8:
+                        if fields[x-1][y+1].possesed == 2 and fields[x-2][y+2].possesed == 0:
+                            return 1
+                            ################
+                            #ATTACKS_BACK
+                    if x+2<8 and y-2>=0:
+                        if fields[x+1][y-1].possesed == 2 and fields[x+2][y-2].possesed == 0:
+                            return 1
+                    if x+2<8 and y+2<8:
+                        if fields[x+1][y+1].possesed == 2 and fields[x+2][y+2].possesed == 0:
+                            return 1
+    return 0
+
+
 class Field:
     def __init__(self):
         self.position = []
