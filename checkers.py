@@ -35,11 +35,10 @@ for tab in fields:
         one.createfield(ex, ey)
         if (ex+ey)%2 == 1:
             one.isActive = 0
-        if ey < 2:
+        if ey < 3:
             one.possesed = 2
-        if ey > 1:
-            one.possesed = 0
-        if ey > 5:
+
+        if ey > 4:
             one.possesed = 1
         ex+=1
     ey+=1
@@ -59,21 +58,26 @@ is_turn_over = 0
 all_attacks = []
 only_attack = 0
 has_just_attacked = 0
-
+attack_ready = 0
+required = 0
 while 1:
     if pygame.time.get_ticks()%(1000/FPS) == 0 and pygame.time.get_ticks() is not timer:
         timer = pygame.time.get_ticks()
         mouse_pos = pygame.mouse.get_pos()
 
         if is_turn_over and has_moved_in_this_turn:
-            for attack in all_attacks:
-                if fields[attack[0]][attack[1]].possesed == (turn+1):
-                    fields[attack[0]][attack[1]].possesed = 0
+            if has_just_attacked == 0:
+                for attack in all_attacks:
+                    if fields[attack[0]][attack[1]].possesed == (turn+1):
+                        fields[attack[0]][attack[1]].possesed = 0
             turn = (turn+1)%2
-            print(turn)
             is_turn_over = 0
             has_moved_in_this_turn = 0
+            has_just_attacked = 0
+            only_attack = 0
+            required = 0
             moves = []
+
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT: sys.exit()
@@ -89,16 +93,17 @@ while 1:
                                                 if not (move[1] == move[3] and move[2] == move[0]):
                                                     all_attacks = all_atacks(fields)
                                                     fields[move[2]][move[3]].possesed = 0
-                                                    has_just_attacked = 1
-                                                    one.possesed = fields[checked[1]][checked[0]].possesed
+                                                    fields[move[0]][move[1]].possesed = turn+1
                                                     fields[checked[1]][checked[0]].possesed = 0
                                                     moves = []
                                                     has_moved_in_this_turn = 1
                                                     n = 1
                                                     only_attack = 0
                                                     if check_for_attacks(fields, one.position[0], one.position[1]):
-                                                        has_moved_in_this_turn = 0
-                                                        only_attack = 1
+                                                        attack_ready = ((one.possesed+1)%2)
+                                                        if has_just_attacked:
+                                                            has_moved_in_this_turn = 0
+                                                            only_attack = 1
                                                     for attack in all_attacks:
                                                         if move == attack:
                                                             all_attacks.remove(attack)
@@ -107,17 +112,26 @@ while 1:
                                             else:
                                                 is_turn_over = 1
                                         else:
+                                            if check_for_attacks(fields, checked[1], checked[0]):
+                                                required = 1
                                             all_attacks = all_atacks(fields)
                                             fields[move[2]][move[3]].possesed = 0
+                                            fields[move[0]][move[1]].possesed = turn+1
                                             if not (move[1] == move[3] and move[2] == move[0]):
                                                 has_just_attacked = 1
-                                            one.possesed = fields[checked[1]][checked[0]].possesed
-                                            fields[checked[1]][checked[0]].possesed = 0
+                                                required = 0
+                                            fields[checked[1]][checked[0]].possesed = 0 ##
+                                            if required:
+                                                fields[move[0]][move[1]].possesed = 0
                                             has_moved_in_this_turn = 1
                                             n = 1
+
                                             if check_for_attacks(fields, one.position[0], one.position[1]):
-                                                has_moved_in_this_turn = 0
-                                                only_attack = 1
+                                                attack_ready = ((one.possesed+1)%2)
+                                                if has_just_attacked:
+                                                    has_moved_in_this_turn = 0
+                                                    only_attack = 1
+
                                             for attack in all_attacks:
                                                 if move == attack:
                                                     all_attacks.remove(attack)
