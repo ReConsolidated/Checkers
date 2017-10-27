@@ -3,6 +3,7 @@ from fields import Field
 from fields import get_moves
 from fields import all_atacks
 from fields import check_for_attacks
+from fields import get_queen_moves
 import numpy
 
 
@@ -11,7 +12,7 @@ FPS = 100 # not higher than 1000, don't change without a good reason
 
 pygame.init()
 
-size = width, height = 900, 600
+size = width, height = 500, 500
 fields = numpy.array([
                         [Field(),Field(),Field(),Field(),Field(),Field(),Field(),Field()],
                         [Field(),Field(),Field(),Field(),Field(),Field(),Field(),Field()],
@@ -26,7 +27,6 @@ fields = numpy.array([
 num = 0
 ex = 0
 ey = 0
-endturn_rect = pygame.Rect(500, 200, 200, 100)
 turn = 0 #0 is WHITE, 1 is BLACK
 
 for tab in fields:
@@ -144,7 +144,11 @@ while 1:
                                 n=0
                             if n == 0:
                                 if one.possesed == (turn + 1):
-                                    moves = get_moves(fields, one.position[0], one.position[1])
+                                    if one.isQueen:
+                                        moves = get_queen_moves(fields, one.position[0], one.position[1])
+                                    else:
+                                        moves = get_moves(fields, one.position[0], one.position[1])
+
                                     checked = one.position
 
 ################################# RENDERING ###########################################################
@@ -161,7 +165,6 @@ while 1:
                 for move in moves:
                     if one.position[0] == move[1] and one.position[1] == move[0]:
                         pygame.draw.rect(screen, (0,255,0), one.rect)
-        pygame.draw.rect(screen, (255,2,2), endturn_rect)
 
 
         pygame.display.flip()
