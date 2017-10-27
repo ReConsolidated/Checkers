@@ -135,6 +135,52 @@ def check_for_attacks(fields, x, y):
                             return 1
     return 0
 
+def get_queen_moves(fields, y, x):
+    moves = []
+    if fields[x][y].isActive:
+        if fields[x][y].possesed == 2: #BLACK
+            n = 1
+            while x+n < 8 and y+n < 8 and fields[x+n][y+n].possesed == 0:
+                moves.append((x+n,y+n,x+n,y+n))
+                n = 1+n
+            n = 1
+            while y+n < 8 and x-n >= 0 and fields[x-n][y+n].possesed == 0:
+                moves.append((x-n,y+n,x-n,y+n))
+                n = 1+n
+            n = 1
+            while x+n < 8 and y-n >= 0 and fields[x+n][y-n].possesed == 0:
+                moves.append((x+n,y-n,x+n,y-n))
+                n = 1+n
+            n = 1
+            while x-n >= 0 and y-n >= 0 and fields[x-n][y-n].possesed == 0:
+                moves.append((x-n,y-n,x-n,y-n))
+                n = 1+n
+
+        if fields[x][y].possesed == 1: #WHITE
+            if x-1>=0 and y-1>=0:
+                if fields[x-1][y-1].possesed == 0:
+                    moves.append((x-1,y-1, x-1, y-1))
+            if x-1>=0 and y+1<8:
+                if fields[x-1][y+1].possesed == 0:
+                    moves.append((x-1,y+1, x-1, y+1))
+                    ################
+                    #ATTACKS
+            if x-2>=0 and y-2>=0:
+                if fields[x-1][y-1].possesed == 2 and fields[x-2][y-2].possesed == 0:
+                    moves.append((x-2,y-2, x-1, y-1))
+            if x-2>=0 and y+2<8:
+                if fields[x-1][y+1].possesed == 2 and fields[x-2][y+2].possesed == 0:
+                    moves.append((x-2,y+2, x-1, y+1))
+                    ################
+                    #ATTACKS_BACK
+            if x+2<8 and y-2>=0:
+                if fields[x+1][y-1].possesed == 2 and fields[x+2][y-2].possesed == 0:
+                    moves.append((x+2,y-2, x+1,y-1))
+            if x+2<8 and y+2<8:
+                if fields[x+1][y+1].possesed == 2 and fields[x+2][y+2].possesed == 0:
+                    moves.append((x+2,y+2, x+1,y+1))
+
+    return moves
 
 class Field:
     def __init__(self):
@@ -144,6 +190,7 @@ class Field:
     def createfield(self, x, y):
         self.rect = pygame.Rect(x*FIELD_SIZE+FIELD_SIZE, y*FIELD_SIZE+FIELD_SIZE, FIELD_SIZE, FIELD_SIZE)
         self.circle_pos = (x*FIELD_SIZE+FIELD_SIZE+25, y*FIELD_SIZE+FIELD_SIZE+25)
+        self.isQueen = 1
     def get_rect(self):
         return self.rect
 
