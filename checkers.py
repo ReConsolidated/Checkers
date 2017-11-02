@@ -27,7 +27,7 @@ fields = numpy.array([
 num = 0
 ex = 0
 ey = 0
-turn = 0 #0 is WHITE, 1 is BLACK
+turn = 0 #0 is WHITE, #1 is BLACK
 
 for tab in fields:
     for one in tab:
@@ -85,6 +85,12 @@ while 1:
                 for tab in fields:
                     for one in tab:
                         if one.collides(mouse_pos):
+                            if one.possesed == 1: #CHECK QUEEN PROMOTION
+                                if one.position[1] == 0:
+                                    one.isQueen = 1
+                            if one.possesed == 2: #CHECK QUEEN PROMOTION
+                                if one.position[1] == 7:
+                                    one.isQueen = 1
                             if moves:
                                 for move in moves:
                                     if one.position[0] == move[1] and one.position[1] == move[0] and has_moved_in_this_turn == 0:
@@ -94,6 +100,7 @@ while 1:
                                                     all_attacks = all_atacks(fields)
                                                     fields[move[2]][move[3]].possesed = 0
                                                     fields[move[0]][move[1]].possesed = turn+1
+                                                    fields[move[2]][move[3]].isQueen = fields[checked[1]][checked[0]].isQueen
                                                     fields[checked[1]][checked[0]].possesed = 0
                                                     moves = []
                                                     has_moved_in_this_turn = 1
@@ -111,12 +118,13 @@ while 1:
                                                         is_turn_over = 1
                                             else:
                                                 is_turn_over = 1
-                                        else:
+                                        else: #USUALLY
                                             if check_for_attacks(fields, checked[1], checked[0]):
                                                 required = 1
                                             all_attacks = all_atacks(fields)
                                             fields[move[2]][move[3]].possesed = 0
                                             fields[move[0]][move[1]].possesed = turn+1
+                                            fields[move[2]][move[3]].isQueen = fields[checked[1]][checked[0]].isQueen
                                             if not (move[1] == move[3] and move[2] == move[0]):
                                                 has_just_attacked = 1
                                                 required = 0
@@ -126,7 +134,7 @@ while 1:
                                             has_moved_in_this_turn = 1
                                             n = 1
 
-                                            if check_for_attacks(fields, one.position[0], one.position[1]):
+                                            if check_for_attacks(fields, one.position[1], one.position[0]):
                                                 attack_ready = ((one.possesed+1)%2)
                                                 if has_just_attacked:
                                                     has_moved_in_this_turn = 0
@@ -138,6 +146,7 @@ while 1:
                                             if has_moved_in_this_turn:
                                                 is_turn_over = 1
                                             moves = []
+
                                     else:
                                         n = 0
                             else:
