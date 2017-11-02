@@ -60,6 +60,9 @@ only_attack = 0
 has_just_attacked = 0
 attack_ready = 0
 required = 0
+player_move = 1
+ai_move = 0
+whos_move = player_move
 while 1:
     if pygame.time.get_ticks()%(1000/FPS) == 0 and pygame.time.get_ticks() is not timer:
         timer = pygame.time.get_ticks()
@@ -79,86 +82,94 @@ while 1:
             moves = []
 
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT: sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                for tab in fields:
-                    for one in tab:
-                        if one.collides(mouse_pos):
-                            if one.possesed == 1: #CHECK QUEEN PROMOTION
-                                if one.position[1] == 0:
-                                    one.isQueen = 1
-                            if one.possesed == 2: #CHECK QUEEN PROMOTION
-                                if one.position[1] == 7:
-                                    one.isQueen = 1
-                            if moves:
-                                for move in moves:
-                                    if one.position[0] == move[1] and one.position[1] == move[0] and has_moved_in_this_turn == 0:
-                                        if only_attack == 1:
-                                            if has_just_attacked == 1:
+        if turn == player_move:
+            print("player move")
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT: sys.exit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    for tab in fields:
+                        for one in tab:
+                            if one.collides(mouse_pos):
+                                if one.possesed == 1: #CHECK QUEEN PROMOTION
+                                    if one.position[1] == 0:
+                                        one.isQueen = 1
+                                if one.possesed == 2: #CHECK QUEEN PROMOTION
+                                    if one.position[1] == 7:
+                                        one.isQueen = 1
+                                if moves:
+                                    for move in moves:
+                                        if one.position[0] == move[1] and one.position[1] == move[0] and has_moved_in_this_turn == 0:
+                                            if only_attack == 1:
+                                                if has_just_attacked == 1:
+                                                    if not (move[1] == move[3] and move[2] == move[0]):
+                                                        all_attacks = all_atacks(fields)
+                                                        fields[move[2]][move[3]].possesed = 0
+                                                        fields[move[0]][move[1]].possesed = turn+1
+                                                        fields[move[2]][move[3]].isQueen = fields[checked[1]][checked[0]].isQueen
+                                                        fields[checked[1]][checked[0]].possesed = 0
+                                                        moves = []
+                                                        has_moved_in_this_turn = 1
+                                                        n = 1
+                                                        only_attack = 0
+                                                        if check_for_attacks(fields, one.position[0], one.position[1]):
+                                                            attack_ready = ((one.possesed+1)%2)
+                                                            if has_just_attacked:
+                                                                has_moved_in_this_turn = 0
+                                                                only_attack = 1
+                                                        for attack in all_attacks:
+                                                            if move == attack:
+                                                                all_attacks.remove(attack)
+                                                        if has_moved_in_this_turn:
+                                                            is_turn_over = 1
+                                                else:
+                                                    is_turn_over = 1
+                                            else: #USUALLY
+                                                if check_for_attacks(fields, checked[1], checked[0]):
+                                                    required = 1
+                                                all_attacks = all_atacks(fields)
+                                                fields[move[2]][move[3]].possesed = 0
+                                                fields[move[0]][move[1]].possesed = turn+1
+                                                fields[move[2]][move[3]].isQueen = fields[checked[1]][checked[0]].isQueen
                                                 if not (move[1] == move[3] and move[2] == move[0]):
-                                                    all_attacks = all_atacks(fields)
-                                                    fields[move[2]][move[3]].possesed = 0
-                                                    fields[move[0]][move[1]].possesed = turn+1
-                                                    fields[move[2]][move[3]].isQueen = fields[checked[1]][checked[0]].isQueen
-                                                    fields[checked[1]][checked[0]].possesed = 0
-                                                    moves = []
-                                                    has_moved_in_this_turn = 1
-                                                    n = 1
-                                                    only_attack = 0
-                                                    if check_for_attacks(fields, one.position[0], one.position[1]):
-                                                        attack_ready = ((one.possesed+1)%2)
-                                                        if has_just_attacked:
-                                                            has_moved_in_this_turn = 0
-                                                            only_attack = 1
-                                                    for attack in all_attacks:
-                                                        if move == attack:
-                                                            all_attacks.remove(attack)
-                                                    if has_moved_in_this_turn:
-                                                        is_turn_over = 1
-                                            else:
-                                                is_turn_over = 1
-                                        else: #USUALLY
-                                            if check_for_attacks(fields, checked[1], checked[0]):
-                                                required = 1
-                                            all_attacks = all_atacks(fields)
-                                            fields[move[2]][move[3]].possesed = 0
-                                            fields[move[0]][move[1]].possesed = turn+1
-                                            fields[move[2]][move[3]].isQueen = fields[checked[1]][checked[0]].isQueen
-                                            if not (move[1] == move[3] and move[2] == move[0]):
-                                                has_just_attacked = 1
-                                                required = 0
-                                            fields[checked[1]][checked[0]].possesed = 0 ##
-                                            if required:
-                                                fields[move[0]][move[1]].possesed = 0
-                                            has_moved_in_this_turn = 1
-                                            n = 1
+                                                    has_just_attacked = 1
+                                                    required = 0
+                                                fields[checked[1]][checked[0]].possesed = 0 ##
+                                                if required:
+                                                    fields[move[0]][move[1]].possesed = 0
+                                                has_moved_in_this_turn = 1
+                                                n = 1
 
-                                            if check_for_attacks(fields, one.position[1], one.position[0]):
-                                                attack_ready = ((one.possesed+1)%2)
-                                                if has_just_attacked:
-                                                    has_moved_in_this_turn = 0
-                                                    only_attack = 1
+                                                if check_for_attacks(fields, one.position[1], one.position[0]):
+                                                    attack_ready = ((one.possesed+1)%2)
+                                                    if has_just_attacked:
+                                                        has_moved_in_this_turn = 0
+                                                        only_attack = 1
 
-                                            for attack in all_attacks:
-                                                if move == attack:
-                                                    all_attacks.remove(attack)
-                                            if has_moved_in_this_turn:
-                                                is_turn_over = 1
-                                            moves = []
+                                                for attack in all_attacks:
+                                                    if move == attack:
+                                                        all_attacks.remove(attack)
+                                                if has_moved_in_this_turn:
+                                                    is_turn_over = 1
+                                                moves = []
 
-                                    else:
-                                        n = 0
-                            else:
-                                n=0
-                            if n == 0:
-                                if one.possesed == (turn + 1):
-                                    if one.isQueen:
-                                        moves = get_queen_moves(fields, one.position[0], one.position[1])
-                                    else:
-                                        moves = get_moves(fields, one.position[0], one.position[1])
+                                        else:
+                                            n = 0
+                                else:
+                                    n=0
+                                if n == 0:
+                                    if one.possesed == (turn + 1):
+                                        if one.isQueen:
+                                            moves = get_queen_moves(fields, one.position[0], one.position[1])
+                                        else:
+                                            moves = get_moves(fields, one.position[0], one.position[1])
 
-                                    checked = one.position
+                                        checked = one.position
+        if turn == ai_move:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT: sys.exit()
+
+            is_turn_over = 1
+            has_moved_in_this_turn = 1
 
 ################################# RENDERING ###########################################################
 
