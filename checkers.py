@@ -4,6 +4,7 @@ from fields import get_moves
 from fields import all_atacks
 from fields import check_for_attacks
 from fields import get_queen_moves
+from ai_functions import get_best_move
 import numpy
 
 
@@ -83,7 +84,6 @@ while 1:
 
 
         if turn == player_move:
-            print("player move")
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: sys.exit()
                 if event.type == pygame.MOUSEBUTTONDOWN:
@@ -167,7 +167,8 @@ while 1:
         if turn == ai_move:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: sys.exit()
-
+            make = get_best_move(fields)
+            
             is_turn_over = 1
             has_moved_in_this_turn = 1
 
