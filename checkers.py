@@ -6,6 +6,7 @@ from fields import check_for_attacks
 from fields import get_queen_moves
 from ai_functions import get_best_move
 import numpy
+import copy
 
 
 FIELD_COLOR = (0,0,0)
@@ -167,8 +168,15 @@ while 1:
         if turn == ai_move:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: sys.exit()
-            make = get_best_move(fields)
-            
+            actual_best = (-2000, (0,0,0,0))
+            make = get_best_move(fields, turn)
+            for result in make:
+                if result[0] > actual_best[0]:
+                    actual_best = copy.deepcopy(result)
+            move = actual_best[1]
+            fields[move[2]][move[3]].possesed = 0
+            fields[move[0]][move[1]].possesed = turn+1
+
             is_turn_over = 1
             has_moved_in_this_turn = 1
 

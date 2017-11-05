@@ -358,6 +358,7 @@ class Field:
     def createfield(self, x, y):
         self.rect = pygame.Rect(x*FIELD_SIZE+FIELD_SIZE, y*FIELD_SIZE+FIELD_SIZE, FIELD_SIZE, FIELD_SIZE)
         self.circle_pos = (x*FIELD_SIZE+FIELD_SIZE+25, y*FIELD_SIZE+FIELD_SIZE+25)
+        self.position = (x,y)
         self.isQueen = 0
     def get_rect(self):
         return self.rect
