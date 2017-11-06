@@ -10,7 +10,7 @@ from fields import get_queen_moves
 def get_best_move(original_fields, original_turn):
     turn = original_turn
     fields = copy.deepcopy(original_fields)
-    
+
     moves = []
     result_moves = []
     n = 0
@@ -22,7 +22,7 @@ def get_best_move(original_fields, original_turn):
     attack_ready = 0
     required = 0
     player_move = 1
-    ai_move = 0
+    ai_move = 2
     whos_move = player_move
     for tab in fields:
         for one in tab:
@@ -92,21 +92,24 @@ def get_best_move(original_fields, original_turn):
                         else:
                             n = 0
                         if is_game_over(fields) == ai_move:
-                            result_moves.append((1000, move))
+                            print("ai victory")
+                            return (((one.position[0], one.position[1]), move))
                         elif is_game_over(fields) == player_move:
                             result_moves.append((-1000, move))
                         else:
-                            next_results = get_best_move(fields, (turn+1)%2)
-                            result_moves.append(next_results)
-    return result_moves
+                            return get_best_move(fields, (turn+1)%2)
+    for result in result_moves:
+        if result[0] > actual_best[0]:
+            actual_best = copy.deepcopy(result)
+    return actual_best[1]
+
 
 def is_game_over(fields):
     pointed = 0
     for tab in fields:
         for one in tab:
-            if pointed>0:
+            if one.possesed > 0:
                 if not one.possesed == pointed:
                     return 0
-                else:
-                    pointed = one.possesed
+                pointed = one.possesed
     return pointed

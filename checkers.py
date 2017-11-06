@@ -170,12 +170,12 @@ while 1:
                 if event.type == pygame.QUIT: sys.exit()
             actual_best = (-2000, (0,0,0,0))
             make = get_best_move(fields, turn)
-            for result in make:
-                if result[0] > actual_best[0]:
-                    actual_best = copy.deepcopy(result)
-            move = actual_best[1]
-            fields[move[2]][move[3]].possesed = 0
-            fields[move[0]][move[1]].possesed = turn+1
+            if get_best_move:
+                move = make[1]
+                position = make[0]
+                fields[position[0]][position[1]].possesed = 0
+                fields[move[2]][move[3]].possesed = 0
+                fields[move[0]][move[1]].possesed = turn+1
 
             is_turn_over = 1
             has_moved_in_this_turn = 1
