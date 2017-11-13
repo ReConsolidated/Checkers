@@ -1,199 +1,123 @@
-import sys, pygame
-from fields import Field
-from fields import get_moves
-from fields import all_atacks
-from fields import check_for_attacks
-from fields import get_queen_moves
-from ai_functions import get_best_move
 import numpy
-import copy
-
-
-FIELD_COLOR = (0,0,0)
-FPS = 100 # not higher than 1000, don't change without a good reason
-
+import pygame
+import sys
+from fields_functions import make_fields, get_moves, check_for_attacks, is_move_attack
 pygame.init()
-
-size = width, height = 500, 500
-fields = numpy.array([
-                        [Field(),Field(),Field(),Field(),Field(),Field(),Field(),Field()],
-                        [Field(),Field(),Field(),Field(),Field(),Field(),Field(),Field()],
-                        [Field(),Field(),Field(),Field(),Field(),Field(),Field(),Field()],
-                        [Field(),Field(),Field(),Field(),Field(),Field(),Field(),Field()],
-                        [Field(),Field(),Field(),Field(),Field(),Field(),Field(),Field()],
-                        [Field(),Field(),Field(),Field(),Field(),Field(),Field(),Field()],
-                        [Field(),Field(),Field(),Field(),Field(),Field(),Field(),Field()],
-                        [Field(),Field(),Field(),Field(),Field(),Field(),Field(),Field()]
-                     ])
-
-num = 0
-ex = 0
-ey = 0
-turn = 0 #0 is WHITE, #1 is BLACK
-
-for tab in fields:
-    for one in tab:
-        one.position = [ex, ey]
-        one.createfield(ex, ey)
-        if (ex+ey)%2 == 1:
-            one.isActive = 0
-        if ey < 3:
-            one.possesed = 2
-
-        if ey > 4:
-            one.possesed = 1
-        ex+=1
-    ey+=1
-    ex=0
-
-
-
+size = width, height = 700, 500
+FIELD_SIZE = 50
 screen = pygame.display.set_mode(size)
-
+end_of_turn_button = pygame.Rect(530, 225, 100, 50)
+FPS = 100
+fields = make_fields()
 timer = 1
+### END OF SETUP
 moves = []
-checked = []
-n = 0
-moved_from = []
+player_move, ai_move = 1, 0
+was_last_move_attack = 0
 has_moved_in_this_turn = 0
-is_turn_over = 0
-all_attacks = []
 only_attack = 0
-has_just_attacked = 0
-attack_ready = 0
-required = 0
-player_move = 1
-ai_move = 0
-whos_move = player_move
+has_attacked_in_this_turn = 0
+
 while 1:
     if pygame.time.get_ticks()%(1000/FPS) == 0 and pygame.time.get_ticks() is not timer:
         timer = pygame.time.get_ticks()
-        mouse_pos = pygame.mouse.get_pos()
 
-        if is_turn_over and has_moved_in_this_turn:
-            if has_just_attacked == 0:
-                for attack in all_attacks:
-                    if fields[attack[0]][attack[1]].possesed == (turn+1):
-                        fields[attack[0]][attack[1]].possesed = 0
-            turn = (turn+1)%2
-            is_turn_over = 0
-            has_moved_in_this_turn = 0
-            has_just_attacked = 0
-            only_attack = 0
-            required = 0
-            moves = []
-
-
-        if turn == player_move:
+        if player_move:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: sys.exit()
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    for tab in fields:
-                        for one in tab:
-                            if one.collides(mouse_pos):
-                                if one.possesed == 1: #CHECK QUEEN PROMOTION
-                                    if one.position[1] == 0:
-                                        one.isQueen = 1
-                                if one.possesed == 2: #CHECK QUEEN PROMOTION
-                                    if one.position[1] == 7:
-                                        one.isQueen = 1
-                                if moves:
+                    mouse_pos = pygame.mouse.get_pos()
+
+                    if end_of_turn_button.collidepoint(mouse_pos):
+                        has_moved_in_this_turn = 0
+                        buffor = ai_move
+                        ai_move = player_move
+                        player_move = buffor
+                        moves = []
+                        only_attack = 0
+                        if not has_attacked_in_this_turn:
+                            even_checker = 0
+                            for x in range(8):
+                                even_checker+=1
+                                for y in range(8):
+                                    if even_checker%2:
+                                        moves.append(get_moves(fields, x, y))
+                                    even_checker+=1
+                            if moves:
+                                if check_for_attacks(moves):
                                     for move in moves:
-                                        if one.position[0] == move[1] and one.position[1] == move[0] and has_moved_in_this_turn == 0:
-                                            if only_attack == 1:
-                                                if has_just_attacked == 1:
-                                                    if not (move[1] == move[3] and move[2] == move[0]):
-                                                        all_attacks = all_atacks(fields)
-                                                        fields[move[2]][move[3]].possesed = 0
-                                                        fields[move[0]][move[1]].possesed = turn+1
-                                                        fields[move[2]][move[3]].isQueen = fields[checked[1]][checked[0]].isQueen
-                                                        fields[checked[1]][checked[0]].possesed = 0
-                                                        moves = []
+                                        if len(move)>3:
+                                            fields[move[0]][move[1]] = 0
+                                            if is_move_attack(move):
+                                                fields[move[0]][move[1]] = 0
+                        moves = []
+
+                    even_checker = 0
+                    for x in range(8):
+                        even_checker+=1
+                        for y in range(8):
+                            if even_checker%2:
+                                rectangle = pygame.Rect(x*FIELD_SIZE+FIELD_SIZE, y*FIELD_SIZE+FIELD_SIZE, FIELD_SIZE, FIELD_SIZE)
+                                if rectangle.collidepoint(mouse_pos):
+                                    if moves:
+                                        for move in moves:
+                                            if move[2] == x and move[3] == y:
+                                                if only_attack:
+                                                    if not (move[2] == move[4] and move[3] == move[5]):
+                                                        #### MAKING MOVE
+                                                        fields[move[4]][move[5]] = 0
+                                                        fields[move[2]][move[3]] = fields[move[0]][move[1]]
+                                                        fields[move[0]][move[1]] = 0
                                                         has_moved_in_this_turn = 1
-                                                        n = 1
-                                                        only_attack = 0
-                                                        if check_for_attacks(fields, one.position[0], one.position[1]):
-                                                            attack_ready = ((one.possesed+1)%2)
-                                                            if has_just_attacked:
-                                                                has_moved_in_this_turn = 0
-                                                                only_attack = 1
-                                                        for attack in all_attacks:
-                                                            if move == attack:
-                                                                all_attacks.remove(attack)
-                                                        if has_moved_in_this_turn:
-                                                            is_turn_over = 1
+                                                        #### END OF MAKING MOVE5
+                                                        moves = []
                                                 else:
-                                                    is_turn_over = 1
-                                            else: #USUALLY
-                                                if check_for_attacks(fields, checked[1], checked[0]):
-                                                    required = 1
-                                                all_attacks = all_atacks(fields)
-                                                fields[move[2]][move[3]].possesed = 0
-                                                fields[move[0]][move[1]].possesed = turn+1
-                                                fields[move[2]][move[3]].isQueen = fields[checked[1]][checked[0]].isQueen
-                                                if not (move[1] == move[3] and move[2] == move[0]):
-                                                    has_just_attacked = 1
-                                                    required = 0
-                                                fields[checked[1]][checked[0]].possesed = 0 ##
-                                                if required:
-                                                    fields[move[0]][move[1]].possesed = 0
-                                                has_moved_in_this_turn = 1
-                                                n = 1
-
-                                                if check_for_attacks(fields, one.position[1], one.position[0]):
-                                                    attack_ready = ((one.possesed+1)%2)
-                                                    if has_just_attacked:
-                                                        has_moved_in_this_turn = 0
+                                                    #### MAKING MOVE
+                                                    fields[move[4]][move[5]] = 0
+                                                    fields[move[2]][move[3]] = fields[move[0]][move[1]]
+                                                    fields[move[0]][move[1]] = 0
+                                                    has_moved_in_this_turn = 1
+                                                    #### END OF MAKING MOVE5
+                                                    #CHECKING IF MOVE WAS ATTACK
+                                                    if not (move[2] == move[4] and move[3] == move[5]) and check_for_attacks(moves):
                                                         only_attack = 1
+                                                        has_moved_in_this_turn = 0
+                                                    else:
+                                                        only_attack = 0
+                                                    moves = []
+                                    if has_moved_in_this_turn == 0:
+                                        moves = get_moves(fields, x, y)
+                            even_checker+=1
 
-                                                for attack in all_attacks:
-                                                    if move == attack:
-                                                        all_attacks.remove(attack)
-                                                if has_moved_in_this_turn:
-                                                    is_turn_over = 1
-                                                moves = []
-
-                                        else:
-                                            n = 0
-                                else:
-                                    n=0
-                                if n == 0:
-                                    if one.possesed == (turn + 1):
-                                        if one.isQueen:
-                                            moves = get_queen_moves(fields, one.position[0], one.position[1])
-                                        else:
-                                            moves = get_moves(fields, one.position[0], one.position[1])
-
-                                        checked = one.position
-        if turn == ai_move:
+        if ai_move:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: sys.exit()
-            actual_best = (-2000, (0,0,0,0))
-            make = get_best_move(fields, turn)
-            if get_best_move:
-                move = make[1]
-                position = make[0]
-                fields[position[0]][position[1]].possesed = 0
-                fields[move[2]][move[3]].possesed = 0
-                fields[move[0]][move[1]].possesed = turn+1
+                ai_move = 0
+                player_move = 1
 
-            is_turn_over = 1
-            has_moved_in_this_turn = 1
+
+
+
 
 ################################# RENDERING ###########################################################
 
         screen.fill((255,255,255))
-        for tab in fields:
-            for one in tab:
-                if one.isActive:
-                    pygame.draw.rect(screen, (0,0,0), one.rect)
-                    if one.possesed == 1:
-                        pygame.draw.circle(screen, (255,255,255), one.circle_pos, 15)
-                    if one.possesed == 2:
-                        pygame.draw.circle(screen, (71,36,0), one.circle_pos, 15)
+        even_checker = 0
+        for x in range(8):
+            even_checker+=1
+            for y in range(8):
+                if even_checker%2:
+                    pygame.draw.rect(screen, (140,70,0), pygame.Rect(x*FIELD_SIZE+FIELD_SIZE, y*FIELD_SIZE+FIELD_SIZE, FIELD_SIZE, FIELD_SIZE))
+                    if fields[x][y] == 1:
+                        pygame.draw.circle(screen, (255,255,255), (x*FIELD_SIZE+FIELD_SIZE+25, y*FIELD_SIZE+FIELD_SIZE+25), 15)
+                    if fields[x][y] == 3:
+                        pygame.draw.circle(screen, (0,0,0), (x*FIELD_SIZE+FIELD_SIZE+25, y*FIELD_SIZE+FIELD_SIZE+25), 15)
+                even_checker += 1
+        even_checker = 0
+        pygame.draw.rect(screen, (255,0,0), end_of_turn_button)
+        for x in range(8):
+            for y in range(8):
                 for move in moves:
-                    if one.position[0] == move[1] and one.position[1] == move[0]:
-                        pygame.draw.rect(screen, (0,255,0), one.rect)
-
-
+                    if x == move[0] and y == move[1]:
+                        pygame.draw.rect(screen, (0,255,0), pygame.Rect(move[2]*FIELD_SIZE+FIELD_SIZE, move[3]*FIELD_SIZE+FIELD_SIZE, FIELD_SIZE, FIELD_SIZE))
         pygame.display.flip()
